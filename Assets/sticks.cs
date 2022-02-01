@@ -4,33 +4,44 @@ using UnityEngine;
 
 public class sticks : MonoBehaviour
 {
-    public float speed = 0.03f;
-    private GameObject stick;
-    private double lastInterval;
-    private double currentTime;
-    private Vector3 scaleChange = new Vector3(0,0.002f,0);
+    public KeyCode moveUp;
+    public KeyCode moveDown;
+    private float speed = 10.0f;
+    private float boundY = 2.55f;
+    private Rigidbody2D rb2d;
     // Start is called before the first frame update
     void Start()
     {
-        lastInterval = Time.realtimeSinceStartup;
-        stick = GameObject.FindGameObjectWithTag("Player");
+        rb2d = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.A) && transform.position.y < 2.5f)
+        var vel = rb2d.velocity;
+        if (Input.GetKey(moveUp))
         {
-            transform.Translate(new Vector2(0, speed));
+            vel.y = speed;
         }
-        if (Input.GetKey(KeyCode.D) && transform.position.y > -2.5f)
+        else if (Input.GetKey(moveDown))
         {
-            transform.Translate(new Vector2(0, -speed));
+            vel.y = -speed;
         }
-        currentTime = Time.realtimeSinceStartup;
-        if ((currentTime > lastInterval + 5) && (stick.transform.localScale.y > 2)){
-            stick.transform.localScale -= scaleChange;
+        else
+        {
+            vel.y = 0;
         }
-        
+        rb2d.velocity = vel;
+
+        var pos = transform.position;
+        if (pos.y > boundY)
+        {
+            pos.y = boundY;
+        }
+        else if (pos.y < -boundY)
+        {
+            pos.y = -boundY;
+        }
+        transform.position = pos;
     }
 }
