@@ -1,59 +1,70 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class ball : MonoBehaviour {
+public class ball : MonoBehaviour
+{
+	public int leftScore = 0;
+	public int rightScore = 0;
 
+	public GameObject leftScoreLabel;
+	public GameObject rightScoreLabel;
 	private Rigidbody2D rb2d;
-	private double lastInterval;
-	private float velocity_x = 1.0f;
-	private float velocity_y = 1.5f;
-	private float speedFactor = 1.2f;
-	private float maxSpeedX = 3.0f;
-	private float maxSpeedY = 3.0f;
-	void GoBall() {
-		float rand = Random.Range (0, 2);
-		if (rand < 1) {
-			rb2d.AddForce (new Vector2 (200, -100));
-		} else {
-			rb2d.AddForce (new Vector2 (-200, 100));
-		}
+
+	private void Start()
+	{
+		rb2d = gameObject.GetComponent<Rigidbody2D>();
+		StartCoroutine(ResetBall());
 	}
 
-	// Use this for initialization
-	void Start () {
-		rb2d = GetComponent<Rigidbody2D> ();
-		lastInterval = Time.realtimeSinceStartup;
-		Invoke ("GoBall", 2);
 
-	}
-
-	void ResetBall() {
-		rb2d.velocity = new Vector2 (0, 0);
+	IEnumerator ResetBall()
+	{
 		transform.position = Vector2.zero;
-	}
-
-	void RestartGame() {
-		ResetBall ();
-		Invoke ("GoBall", 1);
-	}
-	void Update() {
-		double currentTime = Time.realtimeSinceStartup;
-		velocity_x += 0.2f*((float) (currentTime-lastInterval));
-		velocity_y += 0.2f*((float) (currentTime-lastInterval));
-	}
-	void OnCollisionEnter2D(Collision2D coll) {
-		if (coll.collider.CompareTag ("Player")) {
-			float randx = Random.Range (0, 5);
-			float randy = Random.Range (0, 5);
-			Vector2 vel;
-			if (rb2d.velocity.x>maxSpeedX || rb2d.velocity.y>maxSpeedY) {
-				speedFactor = 1;
-			}
-			vel.x = speedFactor*(rb2d.velocity.x + randx);
-			vel.y = speedFactor*(randy + (rb2d.velocity.y / (velocity_x)) + (coll.collider.attachedRigidbody.velocity.y / (velocity_y)));
-			rb2d.velocity = vel;
+		rb2d.velocity = new Vector2(0, 0);
+		yield return new WaitForSeconds(2);
+		float rand = Random.Range(0, 2);
+		if (rand < 1)
+		{
+			rb2d.AddForce(new Vector2(20, -15));
+		}
+		else
+		{
+			rb2d.AddForce(new Vector2(-20, -15));
 		}
 	}
 
+	void OnCollisionEnter2D(Collision2D coll)
+	{
+		// This part that randomizes the bouncing from collision doesn't seem to work too well. If want to implement have to find another way
+
+		//if (coll.collider.gameObject.name == "Paddle1" || coll.collider.gameObject.name == "Paddle2")
+		//{
+		//	Vector2 vel;
+		//	vel.x = rb2d.velocity.x;
+		//	//vel.y = (rb2d.velocity.y / 2) + (coll.collider.attachedRigidbody.velocity.y / 3);
+		//	vel.y = rb2d.velocity.y;
+		//	rb2d.velocity = vel;
+		//}
+		//else if (coll.collider.gameObject.name == "TopWall" || coll.collider.gameObject.name == "BottomWall")
+		//{
+		//	Vector2 vel;
+		//	vel.x = rb2d.velocity.x;
+		//	vel.y = (rb2d.velocity.y / 2) + (coll.collider.attachedRigidbody.velocity.y / 3);
+		//	rb2d.velocity = vel;
+		//}
+		if (coll.collider.gameObject.name == "LeftWall")
+		{
+			rightScore++;
+			rightScoreLabel.GetComponent<Text>().text = rightScore.ToString();
+			StartCoroutine(ResetBall());
+		}
+		else if (coll.collider.gameObject.name == "RightWall")
+		{
+			leftScore++;
+			leftScoreLabel.GetComponent<Text>().text = leftScore.ToString();
+			StartCoroutine(ResetBall());
+		}
+	}
 }
